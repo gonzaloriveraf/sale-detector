@@ -10,11 +10,3 @@ def root():
 @app.get("/health")
 def health():
     return {"healthy": True}
-```
-
----
-
-**`requirements.txt`**
-```
-fastapi==0.111.0
-uvicorn[standard]==0.29.0

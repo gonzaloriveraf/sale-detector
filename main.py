@@ -4,6 +4,7 @@ from scraper import scrape_falabella
 from database import get_db
 from fastapi import Depends
 from sqlalchemy.orm import Session
+from sqlalchemy import text 
 
 app = FastAPI()
 
@@ -14,9 +15,10 @@ class ScrapeRequest(BaseModel):
 def root():
     return {"status": "ok"}
 
+
 @app.get("/db-test")
 def db_test(db: Session = Depends(get_db)):
-    result = db.execute("SELECT 1").fetchone()
+    result = db.execute(text("SELECT 1")).fetchone()
     return {"db": "conectada", "result": result[0]}
 
 

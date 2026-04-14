@@ -26,7 +26,7 @@ def scrape(request: ScrapeRequest, db: Session = Depends(get_db)):
     if "error" in data:
         raise HTTPException(status_code=400, detail=data["error"])
     producto = save_producto(db, data)
-    return producto
+    return data
 
 @app.get("/productos")
 def list_productos(db: Session = Depends(get_db)):

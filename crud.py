@@ -4,6 +4,39 @@ from sqlalchemy import func
 from models import Producto, Precio, Consulta
 
 def save_producto(db: Session, data: dict):
+    producto = db.query(Producto).filter(Producto.url == data["url"]).first()
+
+    if producto:
+        # Solo guarda en precios si cambió
+        if producto.precio_actual != data["precio"]:
+            db.add(Precio(
+                producto_id=producto.id,
+                precio=data["precio"],
+                timestamp=func.now()
+            ))
+            producto.precio_anterior = producto.precio_actual
+            producto.precio_actual = data["precio"]
+        
+        producto.title = data["title"]
+        producto.updated_at = func.now()
+    else:
+        producto = Producto(
+            url=data["url"],
+            title=data["title"],
+            precio_actual=data["precio"],
+        )
+        db.add(producto)
+        db.flush()
+
+        # Primera vez siempre guarda
+        db.add(Precio(
+            producto_id=producto.id,
+            precio=data["precio"],
+            timestamp=func.now()
+        ))
+
+    db.commit()
+    return data
     
     # 1. Busca si ya existe
     producto = db.query(Producto).filter(Producto.url == data["url"]).first()

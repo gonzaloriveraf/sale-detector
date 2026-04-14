@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from scraper import scrape_falabella
-from db import get_db
+from database import get_db
 from crud import save_producto, get_productos
 
 app = FastAPI()

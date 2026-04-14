@@ -1,10 +1,10 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException
 from pydantic import BaseModel
-from scraper import scrape_falabella
-from database import get_db
-from fastapi import Depends
 from sqlalchemy.orm import Session
-from sqlalchemy import text 
+from sqlalchemy import text
+from scraper import scrape_falabella
+from db import get_db
+from crud import save_producto, get_productos
 
 app = FastAPI()
 
@@ -15,17 +15,19 @@ class ScrapeRequest(BaseModel):
 def root():
     return {"status": "ok"}
 
-
-@app.get("/db-test")
-def db_test(db: Session = Depends(get_db)):
+@app.get("/health")
+def health(db: Session = Depends(get_db)):
     result = db.execute(text("SELECT 1")).fetchone()
     return {"db": "conectada", "result": result[0]}
 
-
 @app.post("/scrape")
-def scrape(request: ScrapeRequest):
-    return scrape_falabella(request.url)
+def scrape(request: ScrapeRequest, db: Session = Depends(get_db)):
+    data = scrape_falabella(request.url)
+    if "error" in data:
+        raise HTTPException(status_code=400, detail=data["error"])
+    producto = save_producto(db, data)
+    return producto
 
-
-
-
+@app.get("/productos")
+def list_productos(db: Session = Depends(get_db)):
+    return get_productos(db)

@@ -34,5 +34,6 @@ def list_productos(db: Session = Depends(get_db)):
     return get_productos(db)
 
 @app.get("/run-cronjob")
-    run_cronjob()
-    return { }
+def run_cronjob()
+    result = run_cronjob()
+    return rresult

@@ -8,7 +8,7 @@ def run_cronjob():
     result = []
     
     for producto in productos:
-        data = requests.post(f"{BASE_URL}/scrape", json={"url": producto["url"]}.json())
+        data = requests.post(f"{BASE_URL}/scrape", json={"url": producto["url"]}).json()
         if 'error' not in data: 
             result.append({
                 "title": producto["title"],

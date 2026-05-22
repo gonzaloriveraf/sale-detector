@@ -5,6 +5,7 @@ from sqlalchemy import text
 from scraper import scrape_falabella
 from database import get_db
 from crud import save_producto, get_productos
+from cronjob import run_cronjob
 
 app = FastAPI()
 
@@ -31,3 +32,7 @@ def scrape(request: ScrapeRequest, db: Session = Depends(get_db)):
 @app.get("/productos")
 def list_productos(db: Session = Depends(get_db)):
     return get_productos(db)
+
+@app.get("/run-cronjob")
+    run_cronjob()
+    return { }

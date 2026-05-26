@@ -1,13 +1,11 @@
 from sqlalchemy.orm import Session
-from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy import func
-from models import Producto, Precio, Consulta
+from models import Producto, Precio, Alerta, Notificacion, Usuario
 
 def save_producto(db: Session, data: dict):
     producto = db.query(Producto).filter(Producto.url == data["url"]).first()
 
     if producto:
-        # Solo guarda en precios si cambió
         if producto.precio_actual != data["precio"]:
             db.add(Precio(
                 producto_id=producto.id,
@@ -16,7 +14,6 @@ def save_producto(db: Session, data: dict):
             ))
             producto.precio_anterior = producto.precio_actual
             producto.precio_actual = data["precio"]
-        
         producto.title = data["title"]
         producto.updated_at = func.now()
     else:
@@ -27,8 +24,6 @@ def save_producto(db: Session, data: dict):
         )
         db.add(producto)
         db.flush()
-
-        # Primera vez siempre guarda
         db.add(Precio(
             producto_id=producto.id,
             precio=data["precio"],
@@ -37,61 +32,39 @@ def save_producto(db: Session, data: dict):
 
     db.commit()
     return data
-    
-    # 1. Busca si ya existe
-    producto = db.query(Producto).filter(Producto.url == data["url"]).first()
-
-    if producto:
-        # Guarda precio anterior antes de actualizar
-        precio_anterior = producto.precio_actual
-        producto.precio_anterior = precio_anterior
-        producto.precio_actual = data["precio"]
-        producto.title = data["title"]
-        producto.updated_at = func.now()
-    else:
-        producto = Producto(
-            url=data["url"],
-            title=data["title"],
-            precio_actual=data["precio"],
-        )
-        db.add(producto)
-
-    db.flush()  # para obtener producto.id si es nuevo
-
-    # 2. Registra en histórico de precios
-    db.add(Precio(
-        producto_id=producto.id,
-        precio=data["precio"],
-        timestamp=func.now()
-    ))
-
-    db.commit()
-    return producto
 
 
 def get_productos(db: Session, skip: int = 0, limit: int = 50):
     return db.query(Producto).offset(skip).limit(limit).all()
 
 
-def get_producto_by_url(db: Session, url: str):
-    return db.query(Producto).filter(Producto.url == url).first()
-
-
-def get_historial_precios(db: Session, producto_id: int):
+def get_alertas_activas(db: Session):
     return (
-        db.query(Precio)
-        .filter(Precio.producto_id == producto_id)
-        .order_by(Precio.timestamp.desc())
+        db.query(Alerta, Producto, Usuario)
+        .join(Producto, Producto.id == Alerta.producto_id)
+        .join(Usuario, Usuario.id == Alerta.usuario_id)
+        .filter(Alerta.active == True)
         .all()
     )
 
 
-def save_consulta(db: Session, usuario_id: int, producto_id: int):
-    consulta = Consulta(
-        usuario_id=usuario_id,
-        producto_id=producto_id,
-        timestamp=func.now()
+def get_ultima_notificacion(db: Session, alerta_id: int):
+    return (
+        db.query(Notificacion)
+        .filter(Notificacion.alerta_id == alerta_id)
+        .order_by(Notificacion.created_at.desc())
+        .first()
     )
-    db.add(consulta)
+
+
+def save_notificacion(db: Session, alerta_id: int, usuario_id: int, producto_id: int, precio: int):
+    noti = Notificacion(
+        alerta_id=alerta_id,
+        usuario=usuario_id,
+        producto=producto_id,
+        precio_notificado=precio,
+        created_at=func.now()
+    )
+    db.add(noti)
     db.commit()
-    return consulta
+    return noti

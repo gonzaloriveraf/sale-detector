@@ -1,6 +1,6 @@
 from database import get_session
 from crud import get_alertas_activas, get_ultima_notificacion, save_notificacion
-from scraper import scrape
+from scraper import scrape_falabella
 
 def run_cronjob():
     db = get_session()()
@@ -10,7 +10,7 @@ def run_cronjob():
         alertas = get_alertas_activas(db)
 
         for alerta, producto, usuario in alertas:
-            data = scrape(producto.url)
+            data = scrape_falabella(producto.url)
 
             if "error" in data:
                 continue

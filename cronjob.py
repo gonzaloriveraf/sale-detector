@@ -1,6 +1,7 @@
 from database import get_session
 from crud import get_alertas_activas, get_ultima_notificacion, save_notificacion
 from scraper import scrape_falabella
+from notifications import send_noti
 
 def run_cronjob():
     db = get_session()()

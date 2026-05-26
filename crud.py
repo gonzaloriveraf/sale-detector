@@ -68,3 +68,28 @@ def save_notificacion(db: Session, alerta_id: int, usuario_id: int, producto_id:
     db.add(noti)
     db.commit()
     return noti
+
+def get_producto_by_url(db: Session, url: str):
+    return db.query(Producto).filter(Producto.url == url).first()
+
+
+def get_or_create_usuario(db: Session, email: str):
+    usuario = db.query(Usuario).filter(Usuario.email == email).first()
+    if not usuario:
+        usuario = Usuario(email=email)
+        db.add(usuario)
+        db.flush()
+    return usuario
+
+
+def save_alerta(db: Session, usuario_id: int, producto_id: int, initial_price: int):
+    alerta = Alerta(
+        usuario_id=usuario_id,
+        producto_id=producto_id,
+        initial_price=initial_price,
+        active=True,
+        timestamp=func.now()
+    )
+    db.add(alerta)
+    db.commit()
+    return alerta

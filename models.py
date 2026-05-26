@@ -46,3 +46,5 @@ class Notificacion(Base):
     producto          = Column(Integer, ForeignKey("productos.id"))
     precio_notificado = Column(Integer)
     created_at        = Column(DateTime)
+
+

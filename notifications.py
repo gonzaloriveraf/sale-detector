@@ -3,7 +3,7 @@ import resend
 
 RESEND_API_KEY = os.getenv("RESEND_API_KEY")
 
-def send_noti(email: str, title: str, precio_actual: int, initial_pric:int,url:str,):
+def send_noti(email: str, title: str, precio_actual: int, initial_price:int,url:str,):
     resend.api_key = RESEND_API_KEY
     resend.Emails.send({
  "from": "onboarding@resend.dev",

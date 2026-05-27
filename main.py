@@ -6,6 +6,8 @@ from scraper import scrape_falabella
 from database import get_db
 from crud import save_producto, get_productos, get_producto_by_url, get_or_create_usuario, save_alerta
 from cronjob import run_cronjob
+from models import Alerta
+
 
 app = FastAPI()
 
@@ -58,6 +60,16 @@ def crear_alerta(request: AlertaRequest, db: Session = Depends(get_db)):
         alertas_creadas.append(
             { "alerta_id" : alerta.id, 
             "producto": producto.title
-        })
+            })
 
     return {"alertas": alertas_creadas, "usuario": request.email}
+
+
+@app.put("/alerta/{alerta_id}/desactivar")
+def desactivar_alerta(alerta_id: int, db: Session = Depends(get_db)):
+    alerta = db.query(Alerta).filter(Alerta.id == alerta_id).first()
+    if not alerta:
+        raise HTTPException(status_code=404, detail="Alerta no encontrada")
+    alerta.active = False
+    db.commit()
+    return {"alerta_id": alerta_id, "active": False}

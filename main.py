@@ -14,8 +14,8 @@ class ScrapeRequest(BaseModel):
 
 class AlertaRequest(BaseModel):
     email: str
-    url: str
-    
+    urls: list[str] 
+
 
 @app.get("/")
 def root():
@@ -45,19 +45,19 @@ def scrape(request: ScrapeRequest, db: Session = Depends(get_db)):
 
 @app.post("/alerta")
 def crear_alerta(request: AlertaRequest, db: Session = Depends(get_db)):
-    # 1. Raspa y guarda producto
-    data = scrape_falabella(request.url)
-    if "error" in data:
-        raise HTTPException(status_code=400, detail=data["error"])
-    save_producto(db, data)
-    
-    # 2. Busca el producto recién guardado
-    producto = get_producto_by_url(db, request.url)
-    
-    # 3. Busca o crea usuario
     usuario = get_or_create_usuario(db, request.email)
-    
-    # 4. Crea alerta
-    alerta = save_alerta(db, usuario.id, producto.id, data["precio"])
-    
-    return {"alerta_id": alerta.id, "usuario": usuario.email, "producto": producto.title}
+    alertas_creadas = []
+
+    for url in request.urls: 
+        data = scrape_falabella(url)
+        if "error" in data:
+            continue
+        save_producto(db, data)
+        producto = get_producto_by_url(db, url)
+        alerta = save_alerta(db, usuario.id, producto.id, data["precio"])
+        alertas_creadas.append(
+            { "alerta_id" : alerta.id, 
+            "producto": producto.title
+        })
+
+    return {"alertas": alertas_creadas, "usuario": request.email}

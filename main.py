@@ -11,12 +11,11 @@ app = FastAPI()
 
 class ScrapeRequest(BaseModel):
     url: str
-    
+
 class AlertaRequest(BaseModel):
     email: str
     url: str
-
-
+    
 
 @app.get("/")
 def root():

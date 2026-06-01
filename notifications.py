@@ -6,7 +6,7 @@ RESEND_API_KEY = os.getenv("RESEND_API_KEY")
 def send_noti(email: str, title: str, precio_actual: int, initial_price:int,url:str,):
     resend.api_key = RESEND_API_KEY
     resend.Emails.send({
- "from": "alertg@rango.best",
+ "from": "alertas@mail.rango.best",
         "to": email,
         "subject": f"🔥 Bajó el precio: {title}",
         "html": f"""

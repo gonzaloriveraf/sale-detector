@@ -20,12 +20,11 @@ def scrape_falabella(url: str):
 
     title = product.get("name", "No encontrado")
 
-    # Toma el precio de la primera variante disponible
-    precio_raw = None
+    # Opción simple: minPrice de la variante currentVariant
+    variant_id = product.get("currentVariant")
     for variant in product.get("variants", []):
-        prices = variant.get("prices", [])
-        if prices:
-            precio_raw = prices[0]["price"][0]  # ej: "69.990"
+        if variant.get("id") == variant_id:
+            precio_raw = str(variant.get("minPrice", ""))
             break
 
     # Convierte a entero limpio

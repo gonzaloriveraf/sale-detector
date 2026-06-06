@@ -1,5 +1,5 @@
 from database import get_session
-from crud import get_alertas_activas, get_ultima_notificacion, save_notificacion
+from crud import get_alertas_activas, get_ultima_notificacion, save_notificacion, save_producto
 from scraper import scrape_falabella
 from notifications import send_noti
 
@@ -17,6 +17,9 @@ def run_cronjob():
                 continue
 
             precio_actual = data["precio"]
+
+            # Siempre actualiza producto y registra en precios si cambió
+            save_producto(db, data)
 
             ultima_noti = get_ultima_notificacion(db, alerta.id)
             last_notified_price = ultima_noti.precio_notificado if ultima_noti else alerta.initial_price
